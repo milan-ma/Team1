@@ -3,9 +3,10 @@
 
 	$inData = getRequestInfo();
 	
-	$id = 0;
-	$firstName = "";
-	$lastName = "";
+	$firstname = $inData["firstname"];
+	$lastname = $inData["lastname"];
+	$username = $inData["username"];
+	$password = $inData["password"];
 
 	$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331"); 	
 	if( $conn->connect_error )
@@ -14,19 +15,18 @@
 	}
 	else
 	{
-		// check if this username already exists in database
-		$stmt = $conn->prepare("SELECT ID from Users where Login=?");
-		$stmt->bind_param("s", $username);
+		$stmt = $conn->prepare("SELECT ID,firstName,lastName FROM Users WHERE Login=? AND Password =?");
+		$stmt->bind_param("ss", $inData["login"], $inData["password"]);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		if( $sresult->num_rows > 0 )
+
+		if( $row = $result->fetch_assoc()  )
 		{
-			returnWithError("Username already exists");
+			returnWithInfo( $row['firstName'], $row['lastName'], $row['ID'] );
 		}
 		else
 		{
-			
-			returnWithInfo( $row['firstName'], $row['lastName'], $row['ID'] );
+			returnWithError("No Records Found");
 		}
 
 		$stmt->close();
